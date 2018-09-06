@@ -14,8 +14,12 @@
  *
  */
 
-/* Function declaration. */
+#ifndef MEMTESTER_TESTS_H
+#define MEMTESTER_TESTS_H
 
+#include <stddef.h>
+
+/* Function declaration. */
 int test_stuck_address(unsigned long volatile *bufa, size_t count);
 int test_random_value(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_xor_comparison(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
@@ -32,8 +36,10 @@ int test_walkbits0_comparison(unsigned long volatile *bufa, unsigned long volati
 int test_walkbits1_comparison(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_bitspread_comparison(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_bitflip_comparison(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
+
 #ifdef TEST_NARROW_WRITES    
 int test_8bit_wide_random(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
 int test_16bit_wide_random(unsigned long volatile *bufa, unsigned long volatile *bufb, size_t count);
-#endif
+#endif // TEST_NARROW_WRITES
 
+#endif // MEMTESTER_TESTS_H

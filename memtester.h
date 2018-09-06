@@ -13,6 +13,9 @@
  *
  */
 
+#ifndef MEMTESTER_MEMTESTER_H
+#define MEMTESTER_MEMTESTER_H
+
 #include <sys/types.h>
 
 /* extern declarations. */
@@ -21,3 +24,4 @@ extern int use_phys;
 extern off_t physaddrbase;
 extern int memtester_early_exit;
 
+#endif // MEMTESTER_MEMTESTER_H

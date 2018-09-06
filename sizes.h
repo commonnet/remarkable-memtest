@@ -12,6 +12,9 @@
  *
  */
 
+#ifndef MEMTESTER_SIZES_H
+#define MEMTESTER_SIZES_H
+
 #include <limits.h>
 
 #define rand32() ((unsigned int) rand() | ( (unsigned int) rand() << 16))
@@ -35,4 +38,4 @@
     #error long on this platform is not 32 or 64 bits
 #endif
 
-
+#endif // MEMTESTER_SIZES_H
