@@ -12,6 +12,10 @@
  *
  */
 
+#ifndef MEMTESTER_TYPES_H
+#define MEMTESTER_TYPES_H
+
+#include <stddef.h>
 #include "sizes.h"
 
 typedef unsigned long ul;
@@ -34,3 +38,5 @@ union {
     unsigned short u16s[UL_LEN/16];
     ul val;
 } mword16;
+
+#endif // MEMTESTER_TYPES_H
