@@ -533,7 +533,7 @@ int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count) {
     return 0;
 }
 
-#ifdef TEST_NARROW_WRITES    
+#ifdef TEST_NARROW_WRITES
 int test_8bit_wide_random(ulv* bufa, ulv* bufb, size_t count) {
     u8v *p1, *t;
     ulv *p2;
