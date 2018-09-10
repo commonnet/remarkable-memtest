@@ -8,5 +8,8 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
+firmware: $(OBJECTS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) -DFIRMWARE_BUILD
+
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
