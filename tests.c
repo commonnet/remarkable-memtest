@@ -22,14 +22,11 @@
 #include "sizes.h"
 #include "memtester.h"
 
-char progress[] = "-\\|/";
-#define PROGRESSLEN 4
-#define PROGRESSOFTEN 2500
+extern off_t const kPhysAddrBase;
+
 #define ONE 0x00000001L
 
 /* Function definitions. */
-
-int memtester_has_found_errors = 0;
 
 #ifdef __arm__
 typedef struct compare_regions_helper_result {
@@ -120,26 +117,15 @@ int compare_regions(const char *tname, ulv *bufa, ulv *bufb, size_t count) {
         }
     }
 
-    memtester_has_found_errors = 1;
-    if (use_phys) {
-        physaddr = physaddrbase + (ul)(index1 * sizeof(ul));
-        fprintf(stderr, 
-                "%s FAILURE: 0x%08lx != 0x%08lx at physical address "
-                "0x%08lx (%s).\n",
-                write_error ? "WRITE" : "READ",
-                v1a, v1b, physaddr, tname);
-    } else {
-        fprintf(stderr, 
-                "%s FAILURE: 0x%08lx != 0x%08lx at offset 0x%08lx (%s).\n",
-                write_error ? "WRITE" : "READ",
-                v1a, v1b, (ul)(index1 * sizeof(ul)), tname);
-    }
+    physaddr = kPhysAddrBase + (ul)(index1 * sizeof(ul));
+    fprintf(stderr,
+            "%s FAILURE: 0x%08lx != 0x%08lx at physical address "
+            "0x%08lx (%s).\n",
+            write_error ? "WRITE" : "READ",
+            v1a, v1b, physaddr, tname);
     fflush(stderr);
     fsync(fileno(stderr));
-    if (memtester_early_exit)
-        exit(4);
 
-    /* printf("Skipping to next test..."); */
     return -1;
 }
 
@@ -166,18 +152,11 @@ int test_stuck_address(ulv *bufa, size_t count) {
         p1 = (ulv *) bufa;
         for (i = 0; i < count; i++, p1++) {
             if (*p1 != (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1))) {
-                if (use_phys) {
-                    physaddr = physaddrbase + (i * sizeof(ul));
-                    fprintf(stderr, 
-                            "FAILURE: possible bad address line at physical "
-                            "address 0x%08lx.\n", 
-                            physaddr);
-                } else {
-                    fprintf(stderr, 
-                            "FAILURE: possible bad address line at offset "
-                            "0x%08lx.\n", 
-                            (ul) (i * sizeof(ul)));
-                }
+                physaddr = kPhysAddrBase + (i * sizeof(ul));
+                fprintf(stderr,
+                        "FAILURE: possible bad address line at physical "
+                        "address 0x%08lx.\n",
+                        physaddr);
                 printf("Skipping to next test...\n");
                 fflush(stdout);
                 return -1;
@@ -199,11 +178,6 @@ int test_random_value(ulv *bufa, ulv *bufb, size_t count) {
     fflush(stdout);
     for (i = 0; i < count; i++) {
         *p1++ = *p2++ = rand_ul();
-        if (!(i % PROGRESSOFTEN)) {
-            putchar('\b');
-            putchar(progress[++j % PROGRESSLEN]);
-            fflush(stdout);
-        }
     }
     printf("\b \b");
     fflush(stdout);
@@ -557,11 +531,6 @@ int test_8bit_wide_random(ulv* bufa, ulv* bufb, size_t count) {
             for (b=0; b < UL_LEN/8; b++) {
                 *p1++ = *t++;
             }
-            if (!(i % PROGRESSOFTEN)) {
-                putchar('\b');
-                putchar(progress[++j % PROGRESSLEN]);
-                fflush(stdout);
-            }
         }
         if (compare_regions("8bit_wide_random", bufa, bufb, count)) {
             return -1;
@@ -594,11 +563,6 @@ int test_16bit_wide_random(ulv* bufa, ulv* bufb, size_t count) {
             *p2++ = mword16.val = rand_ul();
             for (b = 0; b < UL_LEN/16; b++) {
                 *p1++ = *t++;
-            }
-            if (!(i % PROGRESSOFTEN)) {
-                putchar('\b');
-                putchar(progress[++j % PROGRESSLEN]);
-                fflush(stdout);
             }
         }
         if (compare_regions("16bit_wide_random", bufa, bufb, count)) {

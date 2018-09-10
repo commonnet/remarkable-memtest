@@ -9,7 +9,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 firmware: $(OBJECTS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) -DFIRMWARE_BUILD
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) -DFIRMWARE_BUILD -DPHYS_ADDR_SIZE=0x80000000
 
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
