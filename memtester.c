@@ -28,6 +28,7 @@
 #include "types.h"
 #include "sizes.h"
 #include "tests.h"
+#include "consts.h"
 
 #define EXIT_FAIL_NONSTARTER    0x01
 #define EXIT_FAIL_ADDRESSLINES  0x02
@@ -54,26 +55,14 @@ test_t const kTests[] = {
     test_16bit_wide_random,
 #endif
 };
-size_t const kTestsLen = sizeof(kTests) / sizeof(kTests[0]);
+#define kTestsLen (sizeof(kTests) / sizeof(kTests[0]))
 
 size_t const kPageSize = 4096;
 char const * const kDeviceName = "/dev/mem";
 
-#ifdef PHYS_ADDR_BASE
-off_t const kPhysAddrBase = (off_t)PHYS_ADDR_BASE;
-#else
-off_t const kPhysAddrBase = (off_t)0;
-#endif
-
-#ifdef PHYS_ADDR_SIZE
-size_t const kTestAddrSpaceBytes = (size_t)PHYS_ADDR_SIZE;
-#else
-size_t const kTestAddrSpaceBytes = (size_t)2 << 30;
-#endif
-
-size_t const kTestAddrSpaceUl = kTestAddrSpaceBytes / sizeof(ul);
-size_t const kHalfSpaceBytes = kTestAddrSpaceBytes / 2;
-size_t const kHalfSpaceUl = kHalfSpaceBytes / sizeof(ul);
+#define kTestAddrSpaceUl (size_t)PHYS_ADDR_SIZE_VAL / sizeof(ul)
+#define kHalfSpaceBytes (size_t)(PHYS_ADDR_SIZE_VAL / 2)
+#define kHalfSpaceUl (size_t)(kHalfSpaceBytes / sizeof(ul))
 size_t const kNumLoops = 1;
 
 
@@ -91,11 +80,11 @@ int main(int argc, char const * const * argv) {
     }
     void volatile * const buf = (void volatile * const) mmap(
         NULL,
-        kTestAddrSpaceBytes,
+        PHYS_ADDR_SIZE_VAL,
         PROT_READ | PROT_WRITE,
         MAP_SHARED | MAP_LOCKED,
         memfd,
-        kPhysAddrBase);
+        PHYS_ADDR_BASE_VAL);
     if (buf == MAP_FAILED) {
         fprintf(
             stderr,

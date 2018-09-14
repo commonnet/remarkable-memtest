@@ -21,8 +21,7 @@
 #include "types.h"
 #include "sizes.h"
 #include "memtester.h"
-
-extern off_t const kPhysAddrBase;
+#include "consts.h"
 
 #define ONE 0x00000001L
 
@@ -117,7 +116,7 @@ int compare_regions(const char *tname, ulv *bufa, ulv *bufb, size_t count) {
         }
     }
 
-    physaddr = kPhysAddrBase + (ul)(index1 * sizeof(ul));
+    physaddr = PHYS_ADDR_BASE_VAL + (ul)(index1 * sizeof(ul));
     fprintf(stderr,
             "%s FAILURE: 0x%08lx != 0x%08lx at physical address "
             "0x%08lx (%s).\n",
@@ -152,7 +151,7 @@ int test_stuck_address(ulv *bufa, size_t count) {
         p1 = (ulv *) bufa;
         for (i = 0; i < count; i++, p1++) {
             if (*p1 != (((j + i) % 2) == 0 ? (ul) p1 : ~((ul) p1))) {
-                physaddr = kPhysAddrBase + (i * sizeof(ul));
+                physaddr = PHYS_ADDR_BASE_VAL + (i * sizeof(ul));
                 fprintf(stderr,
                         "FAILURE: possible bad address line at physical "
                         "address 0x%08lx.\n",
