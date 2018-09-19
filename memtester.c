@@ -50,10 +50,6 @@ test_t const kTests[] = {
     test_solidbits_comparison,
     test_walkbits1_comparison,
     test_walkbits0_comparison,
-#ifdef TEST_NARROW_WRITES
-    test_8bit_wide_random,
-    test_16bit_wide_random,
-#endif
 };
 #define kTestsLen (size_t)(sizeof(kTests) / sizeof(kTests[0]))
 
