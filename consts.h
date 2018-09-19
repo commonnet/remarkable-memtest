@@ -19,14 +19,13 @@
 #define PHYS_ADDR_BASE_VAL (off_t)(PHYS_ADDR_BASE)
 
 #ifndef PHYS_ADDR_SIZE
-#define PHYS_ADDR_SIZE 2 << 30
-#else
+#define PHYS_ADDR_SIZE 2ull << 30ull
 #endif
 #define PHYS_ADDR_SIZE_VAL (size_t)(PHYS_ADDR_SIZE)
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
 #endif
-#define PAGE_SIZE_VAL (size_t)4096
+#define PAGE_SIZE_VAL (size_t)(PAGE_SIZE)
 
 #endif // MEMTESTER_CONSTS_H
