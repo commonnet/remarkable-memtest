@@ -20,7 +20,6 @@
 #include "io.h"
 #include "types.h"
 #include "sizes.h"
-#include "memtester.h"
 #include "consts.h"
 
 #define ONE 0x00000001L
