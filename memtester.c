@@ -53,6 +53,7 @@ test_t const kTests[] = {
 };
 #define kTestsLen (size_t)(sizeof(kTests) / sizeof(kTests[0]))
 
+size_t const kMaxBackoffBytes = 1ull << 20ull;
 size_t const kNumLoops = 1;
 #ifdef USE_MMAP
 char const * const kDeviceName = "/dev/mem";
@@ -104,10 +105,16 @@ buf_t buf_new(size_t init_len) {
         return buf;
     }
 #else // USE_MMAP
+    size_t back_off_bytes = PAGE_SIZE_VAL;
     while (buf.ptr == NULL && buf.len > 0) {
+        fprintf(stdout, "Trying to malloc %zu bytes\n", buf.len);
         buf.ptr = malloc(buf.len);
         if (buf.ptr == NULL) {
-            buf.len -= PAGE_SIZE_VAL;
+            buf.len -= back_off_bytes;
+            back_off_bytes *= 2;
+            back_off_bytes =
+                back_off_bytes >= kMaxBackoffBytes ?
+                kMaxBackoffBytes : back_off_bytes;
         }
     }
     if (buf.ptr == NULL) {
