@@ -25,16 +25,7 @@ typedef unsigned long volatile ulv;
 typedef uint8_t volatile u8v;
 typedef uint16_t volatile u16v;
 
-typedef int (*test_t)(ulv*, ulv*, size_t);
-
-union {
-    uint8_t bytes[UL_LEN/8];
-    ul val;
-} mword8;
-
-union {
-    uint16_t u16s[UL_LEN/16];
-    ul val;
-} mword16;
+typedef size_t (*test_t)(ulv*, ulv*, size_t);
+typedef ul (*binop_t)(ul, ul);
 
 #endif // MEMTESTER_TYPES_H

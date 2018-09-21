@@ -34,24 +34,16 @@
 #define EXIT_FAIL_ADDRESSLINES  0x02
 #define EXIT_FAIL_OTHERTEST     0x04
 
-test_t const kTests[] = {
-    test_random_value,
-    test_xor_comparison,
-    test_sub_comparison,
-    test_mul_comparison,
-    test_div_comparison,
-    test_or_comparison,
-    test_and_comparison,
-    test_seqinc_comparison,
-    test_bitflip_comparison,
-    test_blockseq_comparison,
-    test_checkerboard_comparison,
-    test_bitspread_comparison,
-    test_solidbits_comparison,
-    test_walkbits1_comparison,
-    test_walkbits0_comparison,
+test_t const kCmpTests[] = {
+    test_bitflip_cmp,
+    test_blockseq_cmp,
+    test_checkerboard_cmp,
+    test_bitspread_cmp,
+    test_solidbits_cmp,
+    test_walkbits1_cmp,
+    test_walkbits0_cmp,
 };
-#define kTestsLen (size_t)(sizeof(kTests) / sizeof(kTests[0]))
+#define kCmpTestsLen (size_t)(sizeof(kCmpTests) / sizeof(kCmpTests[0]))
 
 size_t const kMaxBackoffBytes = 1ull << 20ull;
 size_t const kNumLoops = 1;
@@ -158,6 +150,8 @@ int main(int argc, char const * const * argv) {
     }
 
     size_t const half_size = buf.len / 2;
+    size_t const ul_size = buf.len / sizeof(ul);
+    size_t const half_ul_size = ul_size / 2;
     ulv* const bufa = (ulv * const)buf.ptr;
     ulv* const bufb = (ulv * const)((size_t)buf.ptr + half_size);
 
@@ -165,17 +159,19 @@ int main(int argc, char const * const * argv) {
         DEBUG_FPRINTF(stdout, "Loop %lu/%lu\n", loop+1, kNumLoops);
         DEBUG_FPRINTF(stdout, "Running stuck address test: ");
         DEBUG_FFLUSH(stdout);
-        if (!test_stuck_address(bufa, buf.len / sizeof(ul))) {
+        size_t const num_errors = test_stuck_address(bufa, ul_size);
+        if (num_errors == 0) {
             DEBUG_FPRINTF(stdout, "ok\n");
         } else {
             DEBUG_FPRINTF(stdout, "failed\n");
             exit_code |= EXIT_FAIL_ADDRESSLINES;
         }
         DEBUG_FFLUSH(stdout);
-        for (size_t i = 0; i != kTestsLen; ++i) {
+        for (size_t i = 0; i != kCmpTestsLen; ++i) {
             DEBUG_FPRINTF(stdout, "Running test %lu: ", i);
             DEBUG_FFLUSH(stdout);
-            if (!kTests[i](bufa, bufb, half_size / sizeof(ul))) {
+            size_t const num_errors = kCmpTests[i](bufa, bufb, half_ul_size);
+            if (num_errors == 0) {
                 DEBUG_FPRINTF(stdout, "ok\n");
             } else {
                 DEBUG_FPRINTF(stdout, "failed\n");
