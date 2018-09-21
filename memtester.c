@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #include "io.h"
 #include "types.h"
@@ -142,12 +143,33 @@ int buf_is_valid(buf_t* buf) {
 }
 
 
+typedef struct test_info_t {
+    size_t bytes_tested;
+    size_t num_failures;
+    clock_t run_time;
+} test_info_t;
+
+
+test_info_t test_info_new() {
+    test_info_t info = { .bytes_tested = 0, .num_failures = 0, .run_time = 0};
+}
+
+
+void test_info_print_to_stream(test_info_t* info, FILE* stream) {
+    fprintf(stream, "Bytes Tested: %zu\n", info->bytes_tested);
+    fprintf(stream, "Test failures: %zu\n", info->num_failures);
+    fprintf(stream, "Run Time(s): %zu\n", info->run_time/CLOCKS_PER_SEC);
+}
+
+
 int main(int argc, char const * const * argv) {
     int exit_code = 0;
     buf_t buf = buf_new(PHYS_ADDR_SIZE_VAL);
     if (!buf_is_valid(&buf)) {
         exit(EXIT_FAIL_NONSTARTER);
     }
+    test_info_t info = test_info_new();
+    info.bytes_tested = buf.len;
 
     size_t const half_size = buf.len / 2;
     size_t const ul_size = buf.len / sizeof(ul);
@@ -155,6 +177,7 @@ int main(int argc, char const * const * argv) {
     ulv* const bufa = (ulv * const)buf.ptr;
     ulv* const bufb = (ulv * const)((size_t)buf.ptr + half_size);
 
+    clock_t const start_time = clock();
     for (size_t loop = 0; loop != kNumLoops; ++loop) {
         DEBUG_FPRINTF(stdout, "Loop %lu/%lu\n", loop+1, kNumLoops);
         DEBUG_FPRINTF(stdout, "Running stuck address test: ");
@@ -167,6 +190,7 @@ int main(int argc, char const * const * argv) {
             exit_code |= EXIT_FAIL_ADDRESSLINES;
         }
         DEBUG_FFLUSH(stdout);
+        info.num_failures += num_errors;
         for (size_t i = 0; i != kCmpTestsLen; ++i) {
             DEBUG_FPRINTF(stdout, "Running test %lu: ", i);
             DEBUG_FFLUSH(stdout);
@@ -178,12 +202,15 @@ int main(int argc, char const * const * argv) {
                 exit_code |= EXIT_FAIL_OTHERTEST;
             }
             DEBUG_FFLUSH(stdout);
+            info.num_failures += num_errors;
         }
         DEBUG_FPRINTF(stdout, "\n");
         DEBUG_FFLUSH(stdout);
     }
+    info.run_time = clock() - start_time;
     DEBUG_FPRINTF(stdout, "Done.\n");
     DEBUG_FFLUSH(stdout);
+    test_info_print_to_stream(&info, stdout);
     buf_drop(&buf);
     return exit_code;
 }
