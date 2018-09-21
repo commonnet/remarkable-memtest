@@ -121,6 +121,7 @@ buf_t buf_new(size_t init_len) {
     if (ret < 0) {
         DEBUG_FPRINTF(stderr, "Failed to mlock\n");
         free(buf.ptr);
+        buf.ptr = NULL;
     }
 #endif // USE_MMAP
     return buf;
