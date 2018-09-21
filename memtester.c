@@ -154,6 +154,7 @@ typedef struct test_info_t {
 
 test_info_t test_info_new() {
     test_info_t info = { .bytes_tested = 0, .num_failures = 0, .run_time = 0};
+    return info;
 }
 
 
