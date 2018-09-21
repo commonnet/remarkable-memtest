@@ -13,9 +13,9 @@
 #ifdef FIRMWARE_BUILD
 // Make all debug print functions no-ops in the final firmare build to minimize
 // binary size.
-#define DEBUG_FPRINTF(...) (void)
-#define DEBUG_FFLUSH(f) (void)
-#define DEBUG_FSYNC(fd) (void)
+#define DEBUG_FPRINTF(...)
+#define DEBUG_FFLUSH(f)
+#define DEBUG_FSYNC(fd)
 #else // FIRMWARE_BUILD
 #include <stdio.h>
 #include <unistd.h>
