@@ -24,7 +24,6 @@
 
 #define ONE 0x00000001L
 
-/* Function definitions. */
 
 #ifdef __arm__
 typedef struct compare_regions_helper_result {

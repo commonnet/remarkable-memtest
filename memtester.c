@@ -80,7 +80,7 @@ buf_t buf_new(size_t init_len) {
 #ifdef USE_MMAP
     buf.fd = open(kDeviceName, O_RDWR | O_SYNC);
     if (buf.fd < 0) {
-        fprintf(
+        DEBUG_FPRINTF(
             stderr,
             "failed to open %s for physical memory: %s\n",
             kDeviceName,
@@ -95,7 +95,7 @@ buf_t buf_new(size_t init_len) {
         memfd,
         PHYS_ADDR_BASE_VAL);
     if (buf.ptr == MAP_FAILED) {
-        fprintf(
+        DEBUG_FPRINTF(
             stderr,
             "failed to mmap %s for physical memory: %s\n",
             kDeviceName,
@@ -107,7 +107,6 @@ buf_t buf_new(size_t init_len) {
 #else // USE_MMAP
     size_t back_off_bytes = PAGE_SIZE_VAL;
     while (buf.ptr == NULL && buf.len > 0) {
-        fprintf(stdout, "Trying to malloc %zu bytes\n", buf.len);
         buf.ptr = malloc(buf.len);
         if (buf.ptr == NULL) {
             buf.len -= back_off_bytes;
@@ -118,16 +117,16 @@ buf_t buf_new(size_t init_len) {
         }
     }
     if (buf.ptr == NULL) {
-        fprintf(
+        DEBUG_FPRINTF(
             stderr,
             "failed to malloc: %s\n",
             strerror(errno));
         return buf;
     }
-    fprintf(stdout, "malloced %lu bytes\n", buf.len);
+    DEBUG_FPRINTF(stdout, "malloced %lu bytes\n", buf.len);
     int const ret = mlock((void const *)buf.ptr, buf.len);
     if (ret < 0) {
-        fprintf(stderr, "Failed to mlock\n");
+        DEBUG_FPRINTF(stderr, "Failed to mlock\n");
         free(buf.ptr);
     }
 #endif // USE_MMAP
@@ -163,32 +162,32 @@ int main(int argc, char const * const * argv) {
     ulv* const bufb = (ulv * const)((size_t)buf.ptr + half_size);
 
     for (size_t loop = 0; loop != kNumLoops; ++loop) {
-        fprintf(stdout, "Loop %lu/%lu\n", loop+1, kNumLoops);
-        fprintf(stdout, "Running stuck address test: ");
-        fflush(stdout);
+        DEBUG_FPRINTF(stdout, "Loop %lu/%lu\n", loop+1, kNumLoops);
+        DEBUG_FPRINTF(stdout, "Running stuck address test: ");
+        DEBUG_FFLUSH(stdout);
         if (!test_stuck_address(bufa, buf.len / sizeof(ul))) {
-            fprintf(stdout, "ok\n");
+            DEBUG_FPRINTF(stdout, "ok\n");
         } else {
-            fprintf(stdout, "failed\n");
+            DEBUG_FPRINTF(stdout, "failed\n");
             exit_code |= EXIT_FAIL_ADDRESSLINES;
         }
-        fflush(stdout);
+        DEBUG_FFLUSH(stdout);
         for (size_t i = 0; i != kTestsLen; ++i) {
-            fprintf(stdout, "Running test %lu: ", i);
-            fflush(stdout);
+            DEBUG_FPRINTF(stdout, "Running test %lu: ", i);
+            DEBUG_FFLUSH(stdout);
             if (!kTests[i](bufa, bufb, half_size / sizeof(ul))) {
-                fprintf(stdout, "ok\n");
+                DEBUG_FPRINTF(stdout, "ok\n");
             } else {
-                fprintf(stdout, "failed\n");
+                DEBUG_FPRINTF(stdout, "failed\n");
                 exit_code |= EXIT_FAIL_OTHERTEST;
             }
-            fflush(stdout);
+            DEBUG_FFLUSH(stdout);
         }
-        fprintf(stdout, "\n");
-        fflush(stdout);
+        DEBUG_FPRINTF(stdout, "\n");
+        DEBUG_FFLUSH(stdout);
     }
-    fprintf(stdout, "Done.\n");
-    fflush(stdout);
+    DEBUG_FPRINTF(stdout, "Done.\n");
+    DEBUG_FFLUSH(stdout);
     buf_drop(&buf);
     return exit_code;
 }

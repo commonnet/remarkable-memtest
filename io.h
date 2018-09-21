@@ -11,15 +11,17 @@
 #define MEMTESTER_IO_H
 
 #ifdef FIRMWARE_BUILD
-// Make all print functions no-ops in the final firmare build to minimize
+// Make all debug print functions no-ops in the final firmare build to minimize
 // binary size.
-int printf(char const *, ...) {}
-int fprintf(FILE*, char const *, ...) {}
-int fflush(FILE*) {}
-int fsync(int) {}
+#define DEBUG_FPRINTF(...) (void)
+#define DEBUG_FFLUSH(f) (void)
+#define DEBUG_FSYNC(fd) (void)
 #else // FIRMWARE_BUILD
 #include <stdio.h>
 #include <unistd.h>
+#define DEBUG_FPRINTF(fd, ...) fprintf(fd, __VA_ARGS__)
+#define DEBUG_FFLUSH(f) fflush(f)
+#define DEBUG_FSYNC(fd) fsync(fd)
 #endif // FIRMWARE_BUILD
 
 #endif // MEMTESTER_IO_H
