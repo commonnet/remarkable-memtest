@@ -63,17 +63,11 @@ typedef struct buf_t {
 } buf_t;
 
 
-buf_t buf_new(size_t init_len) {
-    buf_t buf = {
-        .ptr = NULL,
-        .len = init_len,
+int buf_init(buf_t* buf, size_t init_len) {
+    buf->len = init_len;
 #ifdef USE_MMAP
-        .fd = -1
-#endif
-    };
-#ifdef USE_MMAP
-    buf.fd = open(kDeviceName, O_RDWR | O_SYNC);
-    if (buf.fd < 0) {
+    buf->fd = open(kDeviceName, O_RDWR | O_SYNC);
+    if (buf->fd < 0) {
         DEBUG_FPRINTF(
             stderr,
             "failed to open %s for physical memory: %s\n",
@@ -81,51 +75,51 @@ buf_t buf_new(size_t init_len) {
             strerror(errno));
         return buf;
     }
-    buf.ptr = mmap(
+    buf->ptr = mmap(
         NULL,
-        buf.len,
+        buf->len,
         PROT_READ | PROT_WRITE,
         MAP_SHARED | MAP_LOCKED,
         memfd,
         PHYS_ADDR_BASE_VAL);
-    if (buf.ptr == MAP_FAILED) {
+    if (buf->ptr == MAP_FAILED) {
         DEBUG_FPRINTF(
             stderr,
             "failed to mmap %s for physical memory: %s\n",
             kDeviceName,
             strerror(errno));
-        buf.ptr = NULL;
-        close(buf.fd);
-        return buf;
+        close(buf->fd);
+        return -1;
     }
 #else // USE_MMAP
+    buf->ptr = NULL;
     size_t back_off_bytes = PAGE_SIZE_VAL;
-    while (buf.ptr == NULL && buf.len > 0) {
-        buf.ptr = malloc(buf.len);
-        if (buf.ptr == NULL) {
-            buf.len -= back_off_bytes;
+    while (buf->ptr == NULL && buf->len > 0) {
+        buf->ptr = malloc(buf->len);
+        if (buf->ptr == NULL) {
+            buf->len -= back_off_bytes;
             back_off_bytes *= 2;
             back_off_bytes =
                 back_off_bytes >= kMaxBackoffBytes ?
                 kMaxBackoffBytes : back_off_bytes;
         }
     }
-    if (buf.ptr == NULL) {
+    if (buf->ptr == NULL) {
         DEBUG_FPRINTF(
             stderr,
             "failed to malloc: %s\n",
             strerror(errno));
-        return buf;
+        return -1;
     }
-    DEBUG_FPRINTF(stdout, "malloced %lu bytes\n", buf.len);
-    int const ret = mlock((void const *)buf.ptr, buf.len);
+    DEBUG_FPRINTF(stdout, "malloced %lu bytes\n", buf->len);
+    int const ret = mlock((void const *)buf->ptr, buf->len);
     if (ret < 0) {
         DEBUG_FPRINTF(stderr, "Failed to mlock\n");
-        free(buf.ptr);
-        buf.ptr = NULL;
+        free(buf->ptr);
+        return ret;
     }
 #endif // USE_MMAP
-    return buf;
+    return 0;
 }
 
 
@@ -140,22 +134,11 @@ void buf_drop(buf_t* buf) {
 }
 
 
-int buf_is_valid(buf_t* buf) {
-    return buf->ptr != NULL;
-}
-
-
 typedef struct test_info_t {
     size_t bytes_tested;
     size_t num_failures;
     clock_t run_time;
 } test_info_t;
-
-
-test_info_t test_info_new() {
-    test_info_t info = { .bytes_tested = 0, .num_failures = 0, .run_time = 0};
-    return info;
-}
 
 
 void test_info_print_to_stream(test_info_t* info, FILE* stream) {
@@ -167,12 +150,11 @@ void test_info_print_to_stream(test_info_t* info, FILE* stream) {
 
 int main(int argc, char const * const * argv) {
     int exit_code = 0;
-    buf_t buf = buf_new(PHYS_ADDR_SIZE_VAL);
-    if (!buf_is_valid(&buf)) {
+    buf_t buf;
+    if (buf_init(&buf, PHYS_ADDR_SIZE_VAL) != 0) {
         exit(EXIT_FAIL_NONSTARTER);
     }
-    test_info_t info = test_info_new();
-    info.bytes_tested = buf.len;
+    test_info_t info = {.bytes_tested = buf.len, .num_failures = 0};
 
     size_t const half_size = buf.len / 2;
     size_t const ul_size = buf.len / sizeof(ul);
